@@ -80,7 +80,7 @@ int BLT_API_STEAM_SteamNetworking_SendP2PPacket(lua_State* L){
 */
 
 // ============================== Steam.SteamFriends ==============================
-
+/*
 // --------- Steam.SteamFriends Hooks ---------
 
 
@@ -99,11 +99,12 @@ void BLT_API_STEAM_SteamFriends_Callbacks::OnGameOverlayActivated(GameOverlayAct
 	else
 		printf("[Steam] Overlay now inactive\n");
 }
+*/
 
 // ============================== Steam.SteamInventory ==============================
-
+/*
 int BLT_API_STEAM_SteamInventory_SetSteamInventoryRequestPricesResultCallback(lua_State* L) {
-	BLT_API_SetCallback(L, "SteamInventoryRequestPricesResultCallback");
+	LuaState_SetGlobalCallback(L, "SteamInventoryRequestPricesResultCallback");
 	g_L = L;
 
 	return 0;
@@ -140,7 +141,6 @@ private:
 	CCallResult< BLT_API_STEAM_SteamInventory_Callbacks, SteamInventoryRequestPricesResult_t > m_SteamInventoryRequestPricesResult;
 };
 
-// 进行异步请求，以接收当前玩家数量。
 void BLT_API_STEAM_SteamInventory_Callbacks::RequestPrices()
 {
 	SteamAPICall_t hSteamAPICall = SteamInventory()->RequestPrices();
@@ -149,7 +149,6 @@ void BLT_API_STEAM_SteamInventory_Callbacks::RequestPrices()
 	printf("Requested Prices\n");
 }
 
-// 调用 SteamAPI_RunCallbacks() 后，在 .SteamUserStats()->GetNumberOfCurrentPlayers() 异步返回时调用。
 void BLT_API_STEAM_SteamInventory_Callbacks::OnSteamInventoryRequestPricesResult(SteamInventoryRequestPricesResult_t *pCallback, bool bIOFailure)
 {
 	if (pCallback->m_result)
@@ -179,27 +178,18 @@ int BLT_API_STEAM_SteamInventory_RequestPrices(lua_State* L) {
 
 	return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
+*/
 
 // ============================== Steam.SteamScreenshots ==============================
 
+/*
 // Trigger Screenshot
 int BLT_API_STEAM_SteamScreenshots_TriggerScreenshot(lua_State* L) {
 	SteamScreenshots()->TriggerScreenshot();
 
 	return 0;
 }
+*/
 
 // SteamScreenshots_SetLocation
 int BLT_API_STEAM_SteamScreenshots_SetLocation(lua_State* L) {
@@ -225,8 +215,8 @@ int BLT_API_STEAM_SteamScreenshots_TagUser(lua_State* L) {
 }
 
 int BLT_API_STEAM_SteamScreenshots_SetScreenshotReadyCallback(lua_State* L) {
-	BLT_API_SetCallback(L, "ScreenshotReadyCallback");
-	g_L = L;
+	LuaState_SetGlobalCallback(L, "ScreenshotReadyCallback");
+	g_L = L;	
 
 	return 0;
 }
@@ -236,7 +226,6 @@ int BLT_API_STEAM_SteamScreenshots_SetScreenshotReadyCallback(lua_State* L) {
 class BLT_API_STEAM_SteamScreenshots_Callbacks
 {
 private:
-	// On
 	STEAM_CALLBACK(BLT_API_STEAM_SteamScreenshots_Callbacks, OnScreenshotReady, ScreenshotReady_t);
 };
 
@@ -249,8 +238,12 @@ void BLT_API_STEAM_SteamScreenshots_Callbacks::OnScreenshotReady(ScreenshotReady
 		printf("Screenshot Write Failed\n");
 	}
 
-	lua_getglobal(g_L, "ScreenshotReadyCallback");
+	if (!LuaState_SafeGetGlobal(g_L, "ScreenshotReadyCallback")) {
+		return;
+	}
 
+	// lua_getglobal(g_L, "ScreenshotReadyCallback");
+	
 	// Param 1：uint32 ScreenshotHandle
 	lua_pushinteger(g_L, pCallback->m_hLocal);
 	// Param 2：bool EResult
@@ -266,9 +259,9 @@ void BLT_API_STEAM_SteamScreenshots_Callbacks::OnScreenshotReady(ScreenshotReady
 
 // ================================================================================
 
-void SetCallback() {
-	static BLT_API_STEAM_SteamFriends_Callbacks SteamFriends_Callbacks;
-	static BLT_API_STEAM_SteamInventory_Callbacks SteamInventory_Callbacks;
+void SetCallbacks() {
+	// static BLT_API_STEAM_SteamFriends_Callbacks SteamFriends_Callbacks;
+	// static BLT_API_STEAM_SteamInventory_Callbacks SteamInventory_Callbacks;
 	static BLT_API_STEAM_SteamScreenshots_Callbacks SteamScreenshots_Callbacks;
 }
 
@@ -278,9 +271,9 @@ void SetCallback() {
 /* 以下是SuperBLT API内容 */
 
 void Plugin_Init(){
-	printf("BLT_API_STEAM loaded successfully\n");
+	PD2HOOK_LOG_LOG("BLT_API_STEAM loaded successfully\n");
 
-	SetCallback();
+	SetCallbacks();
 }
 
 void Plugin_Update(){
@@ -316,6 +309,7 @@ int Plugin_PushLua(lua_State* L){
 	*/
 
 	// Steam.SteamInventory
+	/*
 	lua_newtable(L);
 
 	lua_pushcfunction(L, BLT_API_STEAM_SteamInventory_RequestPrices);
@@ -328,12 +322,15 @@ int Plugin_PushLua(lua_State* L){
 	lua_setfield(L, -2, "GetItemPrice");
 
 	lua_setfield(L, -2, "SteamInventory");
+	*/
 
 	// Steam.SteamScreenshots
 	lua_newtable(L);
 
+	/* Trigger Screenshot
 	lua_pushcfunction(L, BLT_API_STEAM_SteamScreenshots_TriggerScreenshot);
 	lua_setfield(L, -2, "TriggerScreenshot");
+	*/
 
 	lua_pushcfunction(L, BLT_API_STEAM_SteamScreenshots_SetLocation);
 	lua_setfield(L, -2, "SetLocation");
